@@ -34,6 +34,35 @@ export const createContactController = async (req, res) => {
         message: `Successfully created a contact!`,
         data: contact,
     });
+
+    // try {
+    //     const { name, phoneNumber, email, contactType } = req.body;
+    //     if (!name || !phoneNumber) {
+    //         return res.status(400).json({
+    //             status: 'error',
+    //             message: 'Name and phone number are required.',
+    //         });
+    //     }
+
+    //     const newContact = await createContact({
+    //         name,
+    //         phoneNumber,
+    //         email,
+    //         contactType,
+    //     });
+
+    //     res.status(201).json({
+    //         status: 201,
+    //         data: newContact,
+    //         message: 'Successfully created a contact!',
+    //     });
+    // } catch (error) {
+    //     res.status(500).json({
+    //         status: 'error',
+    //         message: 'Error creating contact',
+    //         error: error.message,
+    //     });
+    // }
 };
 
 export const patchContactController = async (req, res, next) => {
