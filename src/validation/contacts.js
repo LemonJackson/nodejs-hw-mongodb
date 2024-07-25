@@ -14,13 +14,14 @@ export const createContactSchema = Joi.object({
     email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
     }),
+    parentId: Joi.string().required(),
     isFavourite: Joi.boolean(),
     contactType: Joi.string().valid('work', 'home', 'personal').required(),
 });
 
 export const updateContactSchema = Joi.object({
     name: Joi.string().min(3).max(30),
-    phoneNumber: Joi.number().integer().min(6).max(16),
+    phoneNumber: Joi.number().integer(),
     email: Joi.string().email(),
     isFavourite: Joi.boolean(),
     contactType: Joi.string().valid('work', 'home', 'personal'),
