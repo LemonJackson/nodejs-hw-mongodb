@@ -1,6 +1,7 @@
 import { ContactsCollection } from '../db/contact.js';
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 import { SORT_ORDER } from '../constants/index.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
 
 export const getAllContacts = async ({
     page = 1,
@@ -14,31 +15,33 @@ export const getAllContacts = async ({
 
     const contactsQuery = ContactsCollection.find();
 
+    // const { contactType, isFavourite } = parseFilterParams(filter);
+
     if (filter.contactType) {
-        contactsQuery.where('contactType').equals(filter.contactType);
+        contactsQuery.where('contactType').equals(contactType);
     };
     if (filter.isFavourite !== null) {
         contactsQuery.where('isFavourite').equals(filter.isFavourite)
     }
 
-    // const contactsCount = await ContactsCollection.find()
-    //     .merge(contactsQuery)
-    //     .countDocuments();
+    const contactsCount = await ContactsCollection.find()
+        .merge(contactsQuery)
+        .countDocuments();
 
-    // const contacts = await contactsQuery
-    //     .skip(skip)
-    //     .limit(limit)
-    //     .sort({ [sortBy]: sortOrder })
-    //     .exec();
+    const contacts = await contactsQuery
+        .skip(skip)
+        .limit(limit)
+        .sort({ [sortBy]: sortOrder })
+        .exec();
 
-    const [contactsCount, contacts] = await Promise.all([
-        ContactsCollection.find().merge(contactsQuery).countDocuments(),
-        contactsQuery
-            .skip(skip)
-            .limit(limit)
-            .sort({ [sortBy]: sortOrder })
-            .exec(),
-    ]);
+    // const [contactsCount, contacts] = await Promise.all([
+    //     ContactsCollection.find().merge(contactsQuery).countDocuments(),
+    //     contactsQuery
+    //         .skip(skip)
+    //         .limit(limit)
+    //         .sort({ [sortBy]: sortOrder })
+    //         .exec(),
+    // ]);
 
     const paginationData = calculatePaginationData(contactsCount, perPage, page);
 
@@ -62,12 +65,18 @@ export const updateContact = async (contactId, payload, options = {}) => {
     const rawResult = await ContactsCollection.findOneAndUpdate(
         { _id: contactId },
         payload,
+        {
+            new: true,
+            includeResultMetadata: true,
+            ...options,
+        },
     );
 
     if (!rawResult || !rawResult.value) return null;
 
     return {
         contact: rawResult.value,
+        isNew: Boolean(rawResult?.lastErrorObject?.upserted),
     };
 };
 
