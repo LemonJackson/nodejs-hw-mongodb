@@ -3,11 +3,8 @@ import { UsersCollection } from '../db/models/user.js';
 import createHttpError from 'http-errors';
 
 import { randomBytes } from 'crypto';
-
 import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/index.js';
 import { SessionsCollection } from '../db/models/session.js';
-
-
 
 export const registerUser = async (payload) => {
     const user = await UsersCollection.findOne({ email: payload.email });

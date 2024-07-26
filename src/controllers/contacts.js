@@ -10,7 +10,6 @@ export const getContactsController = async (req, res) => {
     const filter = parseFilterParams(req.query);
     const userId = req.user._id;
 
-
     const contacts = await getAllContacts({
         page,
         perPage,
@@ -19,10 +18,6 @@ export const getContactsController = async (req, res) => {
         filter,
         userId,
     });
-
-    if (contacts.data.length === 0) {
-        throw createHttpError(404, 'Contacts not found');
-    }
 
     res.json({
         status: 200,
@@ -53,7 +48,7 @@ export const createContactController = async (req, res) => {
         userId: req.user._id,
     };
 
-    const contact = await createContact((contactData, req));
+    const contact = await createContact(contactData, req);
 
     res.status(201).json({
         status: 201,

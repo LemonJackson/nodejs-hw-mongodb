@@ -11,7 +11,7 @@ export const getAllContacts = async ({ page = 1, perPage = 10, sortOrder = SORT_
     // const { contactType, isFavourite } = parseFilterParams(filter);
 
     if (filter.contactType) {
-        contactsQuery.where('contactType').equals(contactType);
+        contactsQuery.where('contactType').equals(filter.contactType);
     };
 
     if (filter.isFavourite !== null) {
@@ -51,26 +51,24 @@ export const getContactById = async (contactId, userId) => {
 };
 
 export const createContact = async (payload) => {
-    const contact = await ContactsCollection.create({ ...payload });
+    const contact = await ContactsCollection.create(payload);
     return contact;
 };
 
-export const updateContact = async (contactId, payload, options = {}, userId) => {
+export const updateContact = async (contactId, payload = {}, userId) => {
+    const updateOptions = { new: true, includeResultMetadata: true };
+
     const rawResult = await ContactsCollection.findOneAndUpdate(
         { _id: contactId, userId },
         payload,
-        {
-            new: true,
-            includeResultMetadata: true,
-            ...options,
-        },
+        updateOptions,
     );
 
     if (!rawResult || !rawResult.value) return null;
 
     return {
         contact: rawResult.value,
-        isNew: Boolean(rawResult?.lastErrorObject?.upserted),
+        isNew: Boolean(rawResult?.lastErrorObject?.upsert),
     };
 };
 
