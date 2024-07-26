@@ -3,6 +3,10 @@ import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { env } from '../utils/env.js';
+
 
 export const getContactsController = async (req, res) => {
     const { page, perPage } = parsePaginationParams(req.query);
@@ -43,53 +47,50 @@ export const getContactByIdController = async (req, res) => {
 };
 
 export const createContactController = async (req, res) => {
+    const photo = req.file;
+    let photoUrl;
+
+    if (photo) {
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+    }
+
     const contactData = {
-        ...req.body,
-        userId: req.user._id,
+      ...req.body,
+      userId: req.user._id,
+      photo: photoUrl,
     };
 
     const contact = await createContact(contactData, req);
 
     res.status(201).json({
-        status: 201,
-        message: `Successfully created a contact!`,
-        data: contact,
+      status: 201,
+      message: `Successfully created a contact!`,
+      data: contact,
     });
-
-    // try {
-    //     const { name, phoneNumber, email, contactType } = req.body;
-    //     if (!name || !phoneNumber) {
-    //         return res.status(400).json({
-    //             status: 'error',
-    //             message: 'Name and phone number are required.',
-    //         });
-    //     }
-
-    //     const newContact = await createContact({
-    //         name,
-    //         phoneNumber,
-    //         email,
-    //         contactType,
-    //     });
-
-    //     res.status(201).json({
-    //         status: 201,
-    //         data: newContact,
-    //         message: 'Successfully created a contact!',
-    //     });
-    // } catch (error) {
-    //     res.status(500).json({
-    //         status: 'error',
-    //         message: 'Error creating contact',
-    //         error: error.message,
-    //     });
-    // }
 };
 
 export const patchContactController = async (req, res) => {
     const { contactId } = req.params;
     const userId = req.user._id;
-    const result = await updateContact(contactId, req.body, userId);
+    const photo = req.file;
+    let photoUrl;
+
+    if (photo) {
+        if (env('ENABLE_CLOUDINARY') === 'true') {
+            photoUrl = await saveFileToCloudinary(photo);
+        } else {
+            photoUrl = await saveFileToUploadDir(photo);
+        }
+    }
+
+    const result = await updateContact(contactId, userId, {
+        ...req.body,
+        photo: photoUrl,
+    });
 
     if (!result) {
         next(createHttpError(404, 'Contact not found'));
