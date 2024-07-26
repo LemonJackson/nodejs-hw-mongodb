@@ -1,0 +1,62 @@
+tags:
+  - Auth
+summary: Refresh a session
+operationId: refresh
+description: 'Refresh a session'
+security:
+  - bearerAuth: []
+requestBody:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - sessionId
+          - refreshToken
+        properties:
+          sessionId:
+            description: "Session ID of user. Can be found in the cookies, created after user's login"
+            type: string
+            example: ObjectId('66951eb62a18f914d887c1de')
+          refreshToken:
+            description: "RefreshToken of session. Can be found in the cookies, created after user's login"
+            type: string
+            example: '494Zj%2FN%2Fq7VuvyUcL%2B%2FBqqa%2B%2BXJ3v1wJoz3%2FlbFZ'
+
+responses:
+  '200':
+    description: Successfully refreshed a session!
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully refreshed a session!
+            data:
+              type: object
+              example: 'accessToken: iYy+ewBoNXMyqadZjhM9G/1k0nMPGpZ225A51Fl+'
+  '401':
+    description: Email or password is invalid.'
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 401
+            message:
+              type: string
+              example: 'Email or password is invalid!'

@@ -1,0 +1,59 @@
+tags:
+  - Auth
+summary: Logout a user
+operationId: logout
+description: 'Logout a user'
+security:
+  - bearerAuth: []
+requestBody:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - sessionId
+          - refreshToken
+        properties:
+          sessionId:
+            description: "Session ID of user. Can be found in the cookies, created after user's login"
+            type: string
+            example: ObjectId('66951eb62a18f914d887c1de')
+          refreshToken:
+            description: "RefreshToken of session. Can be found in the cookies, created after user's login"
+            type: string
+            example: '494Zj%2FN%2Fq7VuvyUcL%2B%2FBqqa%2B%2BXJ3v1wJoz3%2FlbFZ'
+
+responses:
+  '204':
+    description: 'User logged out successfully.'
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 204
+            message:
+              type: string
+              example: 'User logged out successfully.'
+
+  '401':
+    description: Session not found!
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+          properties:
+            status:
+              type: integer
+              example: 401
+            message:
+              type: string
+              example: 'Session not found!'
