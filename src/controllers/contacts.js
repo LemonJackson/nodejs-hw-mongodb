@@ -30,15 +30,15 @@ export const getContactsController = async (req, res) => {
     });
 };
 
-export const getContactByIdController = async (req, res) => {
+export const getContactByIdController = async (req, res, next) => {
     const { contactId } = req.params;
     const userId = req.user._id;
     const contact = await getContactById(contactId, userId);
 
     if (!contact) {
-        throw createHttpError(404, 'Contact not found');
+        next(createHttpError(404, 'Contact not found'));
+        return;
     }
-
     res.json({
         status: 200,
         message: `Successfully found contact with id ${contactId}!`,
@@ -51,29 +51,29 @@ export const createContactController = async (req, res) => {
     let photoUrl;
 
     if (photo) {
-      if (env('ENABLE_CLOUDINARY') === 'true') {
-        photoUrl = await saveFileToCloudinary(photo);
-      } else {
-        photoUrl = await saveFileToUploadDir(photo);
-      }
+        if (env('ENABLE_CLOUDINARY') === 'true') {
+            photoUrl = await saveFileToCloudinary(photo);
+        } else {
+            photoUrl = await saveFileToUploadDir(photo);
+        }
     }
 
     const contactData = {
-      ...req.body,
-      userId: req.user._id,
-      photo: photoUrl,
+        ...req.body,
+        userId: req.user._id,
+        photo: photoUrl,
     };
 
     const contact = await createContact(contactData, req);
 
     res.status(201).json({
-      status: 201,
-      message: `Successfully created a contact!`,
-      data: contact,
+        status: 201,
+        message: `Successfully created a contact!`,
+        data: contact,
     });
 };
 
-export const patchContactController = async (req, res) => {
+export const patchContactController = async (req, res, next) => {
     const { contactId } = req.params;
     const userId = req.user._id;
     const photo = req.file;
@@ -87,10 +87,14 @@ export const patchContactController = async (req, res) => {
         }
     }
 
-    const result = await updateContact(contactId, userId, {
-        ...req.body,
-        photo: photoUrl,
-    });
+    const result = await updateContact(
+        contactId,
+        {
+            ...req.body,
+            photo: photoUrl,
+        },
+        userId,
+    );
 
     if (!result) {
         next(createHttpError(404, 'Contact not found'));
